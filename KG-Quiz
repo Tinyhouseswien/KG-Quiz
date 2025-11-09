@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Quiz: KG in Österreich</title>
+  <style>
+    :root{
+      --bg: #f4f7fb;
+      --card: #ffffff;
+      --primary: #0f62fe;
+      --muted: #6b7280;
+      --correct: #e6ffef;
+      --correct-border: #2bb673;
+      --wrong: #ffe9e9;
+      --wrong-border: #e05151;
+      --shadow: 0 6px 18px rgba(15,22,39,0.08);
+      --radius: 12px;
+      --gap: 14px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      background: linear-gradient(180deg, #eef6ff 0%, var(--bg) 100%);
+      color:#0b1220;
+      padding:18px;
+      display:flex;
+      min-height:100vh;
+      align-items:flex-start;
+      justify-content:center;
+    }
+    .wrap{width:100%;max-width:720px;margin:8px auto;}
+    header.card{
+      background:var(--card);
+      border-radius: var(--radius);
+      padding:16px;
+      box-shadow:var(--shadow);
+      display:flex;
+      gap:12px;
+      align-items:center;
+    }
+    .logo{
+      width:54px;height:54px;border-radius:10px;
+      background:linear-gradient(135deg,var(--primary),#3aa0ff);
+      display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:20px;
+      flex-shrink:0;
+    }
+    header h1{margin:0;font-size:18px}
+    header p{margin:0;color:var(--muted);font-size:13px}
+    main.card{
+      margin-top:12px;
+      background:var(--card);
+      border-radius: var(--radius);
+      padding:14px;
+      box-shadow:var(--shadow);
+      overflow:hidden;
+    }
+    .question{
+      border-radius:10px;
+      padding:12px;
+      margin-bottom:12px;
+      background:linear-gradient(180deg,#fff,#fbfdff);
+      border:1px solid #f0f3f7;
+      transition:transform .15s ease;
+    }
+    .question h3{margin:0 0 8px 0;font-size:15px}
+    .question .meta{font-size:12px;color:var(--muted);margin-bottom:8px}
+    .answers{display:flex;flex-direction:column;gap:8px}
+    .answer{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      padding:10px;
+      border-radius:8px;
+      border:1px solid #eef2f7;
+      background:transparent;
+      cursor:pointer;
+      transition:all .15s ease;
+    }
+    .answer input{accent-color:var(--primary);transform:scale(1.05)}
+    .answer:hover{transform:translateY(-3px);box-shadow:0 6px 18px rgba(11,17,30,0.04)}
+    .answer.disabled{cursor:default;opacity:0.98;transform:none}
+    .answer.correct{background:var(--correct);border-color:var(--correct-border);}
+    .answer.wrong{background:var(--wrong);border-color:var(--wrong-border);}
+    .controls{display:flex;gap:10px;margin-top:10px;align-items:center;}
+    .btn{
+      flex:1;
+      padding:12px 14px;
+      border-radius:10px;
+      border:0;
+      font-weight:600;
+      font-size:15px;
+      cursor:pointer;
+      background:var(--primary);
+      color:white;
+      box-shadow: 0 6px 18px rgba(15,98,255,0.12);
+    }
+    .btn.ghost{
+      background:transparent;
+      color:var(--primary);
+      border:1px solid rgba(15,98,255,0.12);
+      box-shadow:none;
+    }
+    .result{
+      margin-top:12px;
+      padding:12px;
+      border-radius:10px;
+      background:linear-gradient(90deg,#ffffff,#fbfdff);
+      border:1px solid #eef2f7;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+    }
+    .score{font-weight:700;font-size:16px;}
+    .progress{height:10px;background:#eef3ff;border-radius:999px;overflow:hidden;flex:1;margin-left:12px;}
+    .progress > i{display:block;height:100%;width:0%;background:linear-gradient(90deg,var(--primary),#3aa0ff);transition:width .6s ease;}
+    footer{
+      margin-top:16px;
+      text-align:center;
+      color:var(--muted);
+      font-size:13px;
+    }
+    footer span{
+      display:block;
+      font-weight:600;
+      color:#0f62fe;
+      margin-top:4px;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="card">
+      <div class="logo">KG</div>
+      <div>
+        <h1>Quiz: Abschluss einer KG in Österreich</h1>
+        <p>10 Multiple-Choice-Fragen · nur 1 richtige Antwort · mobiloptimiert</p>
+      </div>
+    </header>
+
+    <main class="card" id="mainCard">
+      <form id="quizForm"></form>
+
+      <div class="controls">
+        <button id="submitBtn" class="btn" type="button">Quiz abschließen</button>
+        <button id="resetBtn" class="btn ghost" type="button">Nochmal versuchen</button>
+      </div>
+
+      <div id="resultBox" class="result" style="display:none">
+        <div>
+          <div class="score" id="scoreText">Du hast 0 von 10 Punkten erreicht.</div>
+          <div style="font-size:13px;color:var(--muted)">Die korrekten Antworten sind grün markiert.</div>
+        </div>
+        <div class="progress"><i id="progressBar"></i></div>
+      </div>
+    </main>
+
+    <footer>
+      Viel Erfolg beim Lernen!  
+      <span>Hergestellt von Mohamad Terjman</span>
+    </footer>
+  </div>
+
+  <script>
+    const questions = [
+      { q: "1. Wie viele Gesellschafter braucht eine KG mindestens in Österreich?",
+        a: ["Nur einen Gesellschafter","Mindestens zwei Gesellschafter","Mindestens drei Gesellschafter","Mindestens vier Gesellschafter"],
+        correctIndex: 1
+      },
+      { q: "2. Wer haftet unbeschränkt bei einer KG?",
+        a: ["Der Kommanditist","Der Komplementär","Beide gleich unbeschränkt","Keiner haftet unbeschränkt"],
+        correctIndex: 1
+      },
+      { q: "3. Mit welchem Ereignis entsteht die KG rechtlich in Österreich?",
+        a: ["Mit Abschluss des Gesellschaftsvertrages","Mit Eintragung im Firmenbuch","Mit Wahrnehmung der Geschäftsführung","Mit Einzahlung der Einlage"],
+        correctIndex: 1
+      },
+      { q: "4. Ist für den Gesellschaftsvertrag der KG eine bestimmte Form vorgeschrieben?",
+        a: ["Ja, er muss notariell beurkundet werden","Ja, er muss schriftlich sein","Nein, keine bestimmte Form gesetzlich vorgesehen","Ja, er muss öffentlich beglaubigt werden"],
+        correctIndex: 2
+      },
+      { q: "5. Wer darf die Gesellschaft nach außen vertreten bei einer KG?",
+        a: ["Nur der Kommanditist","Nur der Komplementär","Alle Gesellschafter gleich","Nur ein externer Geschäftsführer"],
+        correctIndex: 1
+      },
+      { q: "6. Haftet der Kommanditist gegenüber Gesellschaftsgläubigern unbegrenzt?",
+        a: ["Ja, in allen Fällen","Nein, er haftet nur bis zur eingetragenen Haftsumme","Ja, aber nur anteilig","Nein, er haftet gar nicht"],
+        correctIndex: 1
+      },
+      { q: "7. Muss eine KG in Österreich zwingend einen schriftlichen Vertrag haben?",
+        a: ["Ja, der Vertrag muss schriftlich sein","Nein, er darf auch mündlich sein","Nein, kein Vertrag nötig","Ja, privat beglaubigt"],
+        correctIndex: 1
+      },
+      { q: "8. Darf der Firmenwortlaut einer KG den Zusatz „KG“ nicht enthalten?",
+        a: ["Ja, er darf fehlen","Nein, der Zusatz ist zwingend","Ja, wenn Kommanditist zustimmt","Nein, nur „Kommanditgesellschaft“ darf stehen"],
+        correctIndex: 1
+      },
+      { q: "9. Darf eine KG nach österreichischem Recht frei gewähltem Zweck dienen?",
+        a: ["Nein, nur Handelsgewerbe","Ja, auch freie Berufe oder Landwirtschaft möglich","Nur Industrieunternehmen","Nur Dienstleistungsunternehmen"],
+        correctIndex: 1
+      },
+      { q: "10. In welchem Gesetz sind die Grundlagen der KG geregelt?",
+        a: ["Im Aktiengesetz (AktG)","Im GmbH-Gesetz (GmbHG)","Im Unternehmensgesetzbuch (UGB)","Im Handelsgesetzbuch (HGB)"],
+        correctIndex: 2
+      }
+    ];
+
+    const form = document.getElementById('quizForm');
+    const submitBtn = document.getElementById('submitBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    const resultBox = document.getElementById('resultBox');
+    const scoreText = document.getElementById('scoreText');
+    const progressBar = document.getElementById('progressBar');
+
+    function safeId(s){ return btoa(unescape(encodeURIComponent(s))).replace(/=/g,''); }
+
+    questions.forEach((item, qi) => {
+      const qWrap = document.createElement('div');
+      qWrap.className = 'question';
+      const h = document.createElement('h3');
+      h.textContent = item.q;
+      qWrap.appendChild(h);
+      const meta = document.createElement('div');
+      meta.className = 'meta';
+      meta.textContent = `Frage ${qi+1} von ${questions.length}`;
+      qWrap.appendChild(meta);
+      const answers = document.createElement('div');
+      answers.className = 'answers';
+      item.a.forEach((text, ai) => {
+        const id = `q${qi}_${safeId(text)}`;
+        const label = document.createElement('label');
+        label.className = 'answer';
+        label.innerHTML = `<input type="radio" name="q${qi}" id="${id}" value="${ai}"><span>${text}</span>`;
+        if(ai===item.correctIndex) label.dataset.correct="true";
+        answers.appendChild(label);
+      });
+      qWrap.appendChild(answers);
+      form.appendChild(qWrap);
+    });
+
+    submitBtn.addEventListener('click', ()=>{
+      let score=0;
+      questions.forEach((q,qi)=>{
+        const selected=form.querySelector(`input[name="q${qi}"]:checked`);
+        const answers=form.querySelectorAll(`input[name="q${qi}"]`);
+        answers.forEach(a=>{
+          const label=a.parentElement;
+          label.classList.add('disabled');
+          if(label.dataset.correct) label.classList.add('correct');
+          if(selected && a===selected && !label.dataset.correct) label.classList.add('wrong');
+        });
+        if(selected && parseInt(selected.value)===q.correctIndex) score++;
+      });
+      scoreText.textContent=`Du hast ${score} von ${questions.length} Punkten erreicht.`;
+      progressBar.style.width=(score/questions.length*100)+'%';
+      resultBox.style.display='flex';
+      submitBtn.disabled=true;
+      form.querySelectorAll('input').forEach(i=>i.disabled=true);
+    });
+
+    resetBtn.addEventListener('click',()=>{
+      form.innerHTML='';
+      submitBtn.disabled=false;
+      resultBox.style.display='none';
+      progressBar.style.width='0';
+      scoreText.textContent='Du hast 0 von 10 Punkten erreicht.';
+      // Neu aufbauen
+      questions.forEach((item, qi)=>{
+        const qWrap=document.createElement('div');
+        qWrap.className='question';
+        const h=document.createElement('h3');
+        h.textContent=item.q;
+        qWrap.appendChild(h);
+        const meta=document.createElement('div');
+        meta.className='meta';
+        meta.textContent=`Frage ${qi+1} von ${questions.length}`;
+        qWrap.appendChild(meta);
+        const answers=document.createElement('div');
+        answers.className='answers';
+        item.a.forEach((text, ai)=>{
+          const id=`q${qi}_${safeId(text)}`;
+          const label=document.createElement('label');
+          label.className='answer';
+          label.innerHTML=`<input type="radio" name="q${qi}" id="${id}" value="${ai}"><span>${text}</span>`;
+          if(ai===item.correctIndex) label.dataset.correct="true";
+          answers.appendChild(label);
+        });
+        qWrap.appendChild(answers);
+        form.appendChild(qWrap);
+      });
+    });
+  </script>
+</body>
+</html>
